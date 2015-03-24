@@ -10,7 +10,7 @@ import argparse
 import json
 import asciiweather
 
-APIKEY = 'dc619f36b5360543' 
+APIKEY = 'dc619f36b5360543'
 APIURL = "http://api.wunderground.com/api/" + APIKEY
 parser = argparse.ArgumentParser()
 parser.add_argument('time', default='now', choices=['now','tomorrow','week'])
@@ -32,13 +32,13 @@ def conditions(locURL):
 
 def geolookup(loc):
 	url = APIURL + "/geolookup/q/" + quote(loc) + '.json'
-	try:	
-		return loadjson(url)['location']['requesturl'][:-5] + '.json' 
+    try:
+		newurl = loadjson(url)['location']['requesturl'][:-5] + '.json'
 	except KeyError:
-		print "Ambiguous query"
+		return "Ambiguous query"
 
 def forecast(locURL):
-	json = loadjson(APIURL + "/forecast/q/" + locURL)   
+	json = loadjson(APIURL + "/forecast/q/" + locURL)
 	return json['forecast']['simpleforecast']['forecastday']
 
 def main(location, time):
@@ -50,7 +50,7 @@ def main(location, time):
 	else:
 		return forecast(geolookup(location))
 
-if __name__ == __main__: 
+if __name__ == "__main__":
 	main(location, time)
 main(location, time)
 condIcon = []
