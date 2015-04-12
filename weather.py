@@ -20,38 +20,38 @@ location = ' '.join(args.location)
 time = args.time
 
 def loadjson(url):
-	req = urllib2.Request(url)
-	opener = urllib2.build_opener()
-	f = opener.open(req)
-	data = json.loads(f.read())
-	return data
+    req = urllib2.Request(url)
+    opener = urllib2.build_opener()
+    f = opener.open(req)
+    data = json.loads(f.read())
+    return data
 
 def conditions(locURL):
-	json = loadjson(APIURL + "/conditions/q/" + locURL)
-	return json['current_observation']
+    json = loadjson(APIURL + "/conditions/q/" + locURL)
+    return json['current_observation']
 
 def geolookup(loc):
-	url = APIURL + "/geolookup/q/" + quote(loc) + '.json'
+    url = APIURL + "/geolookup/q/" + quote(loc) + '.json'
     try:
-		newurl = loadjson(url)['location']['requesturl'][:-5] + '.json'
-	except KeyError:
-		return "Ambiguous query"
+        newurl = loadjson(url)['location']['requesturl'][:-5] + '.json'
+    except KeyError:
+        return "Ambiguous query"
 
 def forecast(locURL):
-	json = loadjson(APIURL + "/forecast/q/" + locURL)
-	return json['forecast']['simpleforecast']['forecastday']
+    json = loadjson(APIURL + "/forecast/q/" + locURL)
+    return json['forecast']['simpleforecast']['forecastday']
 
 def main(location, time):
-	if time == "now":
-		for x,y in conditions(geolookup(location)).iteritems():
-			return x, y
-	elif time == "tomorrow":
-		return forecast(geolookup(location))[0]
-	else:
-		return forecast(geolookup(location))
+    if time == "now":
+        for x,y in conditions(geolookup(location)).iteritems():
+            return x, y
+    elif time == "tomorrow":
+        return forecast(geolookup(location))[0]
+    else:
+        return forecast(geolookup(location))
 
 if __name__ == "__main__":
-	main(location, time)
+    main(location, time)
 main(location, time)
 condIcon = []
 highTemp = []
