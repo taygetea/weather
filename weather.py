@@ -67,11 +67,11 @@ def draw(weather={'temp_f': 47.6, 'icon': 'partlycloudy'},
             row = aw.numbers[int(temp[y])][x]
             line.append(row)
         asciitemp.append(''.join(line))
+    for x in asciitemp:
+        print x
+    for x in range(len(icon)):
+        print str(icon[x])
     return asciitemp, icon
-    # for x in asciitemp:
-    #     print x
-    # for x in range(len(icon)):
-    #     print str(icon[x])
 
 
 def main(location, time):
