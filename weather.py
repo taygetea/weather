@@ -6,24 +6,26 @@ from urllib import quote
 import argparse
 import json
 import asciiweather as aw
+import drawascii
+import sys
+
 
 DEBUG = False
-WIDTH = 80
-ICONPOS = [0, 0]
-NUMPOS = [23, 3]
+
 locations = {'icon': (0, 0),
              'nums': (23, 3),
              'date': (26, 1)}
 APIKEY = 'dc619f36b5360543'
 APIURL = "http://api.wunderground.com/api/" + APIKEY
-parser = argparse.ArgumentParser()
+
+# parser = argparse.ArgumentParser()
 # parser.add_argument('time', default='now', choices=['now','tomorrow','week'])
-# parser.add_argument('location', nargs='+')
-args = parser.parse_args()
-location = "34683"  # ' '.join(args.location)
-time = "now"  # args.time
+# parser.add_argument('location', default='ip', nargs='+')
+# args = parser.parse_args()
+location = "new york"  # ' '.join(sys.argv[1:]) # ' '.join(args.location)
+time = "now"  # sys.argv[0] # args.time
 
-
+print time, location
 def loadjson(url):
     req = urllib2.Request(url)
     opener = urllib2.build_opener()
@@ -32,17 +34,39 @@ def loadjson(url):
     return data
 
 
+def geoIP():
+    response = loadjson("http://ip-api.com/json")
+    if response["status"] == "success":
+        return response
+    else:
+        raise LookupError
+
+
 def conditions(locURL):
     json = loadjson(APIURL + "/conditions/q/" + locURL)
     return json['current_observation']
 
 
 def geolookup(loc):
+    print APIURL
+    print quote(loc)
     url = APIURL + "/geolookup/q/" + quote(loc) + '.json'
-    try:
+    response = loadjson(url)
+    if 'results' in response['response'].keys():
+        options = response['response']['results']
+        locality = geoIP()
+        disambiguated = set()
+        for option in options:
+            strval = lambda x: {str(y) for y in x.values()}
+            op = strval(option)
+            lc = strval(locality)
+            if len(op & lc) > len(disambiguated):
+                disambiguated = option
+        print disambiguated
+
+    else:
         return loadjson(url)['location']['requesturl'][:-5] + '.json'
-    except KeyError:
-        return "Ambiguous query"
+
 
 
 def forecast(locURL):
@@ -50,8 +74,7 @@ def forecast(locURL):
     return json['forecast']['simpleforecast']['forecastday']
 
 
-def draw(weather={'temp_f': 47.6, 'icon': 'partlycloudy'},
-         iconpos=ICONPOS, numpos=NUMPOS):
+def icon(weather):
     icons = {'clear': aw.clear,
              'cloudy': aw.cloudy,
              'partlycloudy': aw.partlycloudy,
@@ -59,6 +82,10 @@ def draw(weather={'temp_f': 47.6, 'icon': 'partlycloudy'},
              'rain': aw.rainy,
              'tstorms': aw.storm}
     icon = icons[weather['icon']]
+    return icon
+
+
+def temp(weather):
     temp = list(str(weather['temp_f']).split('.')[0])
     asciitemp = []
     for x in range(6):
@@ -67,28 +94,25 @@ def draw(weather={'temp_f': 47.6, 'icon': 'partlycloudy'},
             row = aw.numbers[int(temp[y])][x]
             line.append(row)
         asciitemp.append(''.join(line))
-    for x in asciitemp:
-        print x
-    for x in range(len(icon)):
-        print str(icon[x])
-    return asciitemp, icon
+    return asciitemp
 
 
-def main(location, time):
+if __name__ == "__main__":
     if time == "now":
-        weather = conditions(geolookup(location))
+        weather = geolookup(location)
     elif time == "tomorrow":
         weather = forecast(geolookup(location))[0]
     else:
         weather = forecast(geolookup(location))
-    return weather
+    import pprint
+    pprint.pprint(weather)
 
-if __name__ == "__main__":
-    if DEBUG:
-        draw()
-    else:
 
-        draw(main(location, time))
+
+
+
+
+
 
 condIcon = []
 highTemp = []
