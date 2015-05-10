@@ -12,7 +12,7 @@ import asciiweather as aw
 DEBUG = False
 locations = dict(icon=(0, 0), nums=(23, 3), date=(26, 1))
 APIKEY = 'dc619f36b5360543'
-APIURL = "http://api.wunderground.com/api/" + APIKEY
+APIURL = "http://127.0.0.1"# "http://api.wunderground.com/api/" + APIKEY
 icons = dict(clear=aw.clear, cloudy=aw.cloudy, partlycloudy=aw.partlycloudy, mostlycloudy=aw.partlycloudy,
              rain=aw.rainy, tstorms=aw.storm)  # TODO: make a config file with this stuff
 
