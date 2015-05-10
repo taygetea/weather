@@ -145,11 +145,11 @@ def gridfill(rowdict):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('time', default='now', choices=['now','tomorrow','week'])
-    parser.add_argument('location', default='here',
+   #  parser.add_argument('time', default='now', choices=['now','tomorrow','week'])
+    parser.add_argument('location', default='here', nargs='+')
     args = parser.parse_args()
     location = ' '.join(args.location)
-    time = args.time
+    time = "now"  # args.time
     if location == "here":
         geo = geoip()
         location = geo['city'] + geo['region'] + geo['country']
