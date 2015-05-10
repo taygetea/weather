@@ -3,9 +3,9 @@
 import urllib2
 from urllib import quote
 import json
+from math import radians, sin, cos, sqrt, asin
 
 import asciiweather as aw
-
 
 
 
@@ -20,10 +20,24 @@ DEBUG = False
 locations = dict(icon=(0, 0), nums=(23, 3), date=(26, 1))
 APIKEY = 'dc619f36b5360543'
 APIURL = "http://api.wunderground.com/api/" + APIKEY
-location = '34683' # TODO: arbitrary parameters
+location = '34683'  # TODO: arbitrary parameters
 time = "now"
 icons = dict(clear=aw.clear, cloudy=aw.cloudy, partlycloudy=aw.partlycloudy, mostlycloudy=aw.partlycloudy,
-             rain=aw.rainy, tstorms=aw.storm) # TODO: make a config file with this stuff
+             rain=aw.rainy, tstorms=aw.storm)  # TODO: make a config file with this stuff
+
+
+def haversine(lat1, lon1, lat2, lon2):  # http://rosettacode.org/wiki/Haversine_formula#Python
+
+    r = 6372.8  # Earth radius in kilometers
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+
+    a = sin(dlat/2)**2 + cos(lat1)*cos(lat2)*sin(dlon/2)**2
+    c = 2*asin(sqrt(a))
+
+    return r * c
 
 
 def loadjson(url):
@@ -34,40 +48,63 @@ def loadjson(url):
     return data
 
 
-def geoIP():
+def geoip():
     response = loadjson("http://ip-api.com/json")
     if response["status"] == "success":
         return response
 
 
-def conditions(locURL):
-    json = loadjson(APIURL + "/conditions/q/" + locURL)
-    return json['current_observation']
+def conditions(locurl):
+    cond = loadjson(APIURL + "/conditions/q/" + locurl)
+    return cond['current_observation']
 
 
 def geolookup(loc):
+    loc = loc.lower()
     url = APIURL + "/geolookup/q/" + quote(loc) + '.json'
     response = loadjson(url)
     if 'results' in response['response'].keys():  # Time to disambiguate!
         options = response['response']['results']
-        locality = geoIP()
-        disambiguated = set()
+        locality = geoip()
+        disambiguated = []
         strval = lambda x: {str(y) for y in x.values()}
         lc = strval(locality)
+        with open("clean.json") as f:
+            bigcities = json.load(f)
         for option in options:
             op = strval(option)
+
             # TODO: check against the json
-            if len(op & lc) > len(disambiguated):
+            """
+            given: city name is in the file
+            then: enter latlong to geolookup
+
+            given: city name not in the file
+            then: out of the results with the most matching terms to your IP location,
+            get the one with the smallest distance to you
+            """
+            if loc in bigcities.keys():
+                weighted = 0
+                best = []
+                for entry in bigcities[loc]:
+                    distance = haversine(entry['Longitude'], entry['Latitude'], locality['lat'], locality['lon'])
+                    population = entry['Population']
+                    if (population/distance) > weighted:
+                        weighted = (population/distance)
+                        best = entry
+                return geolookup(' '.join([loc, best['Country']]))
+            elif len(op & lc) > len(disambiguated):  # checks for raw similarity
+                print op, lc, disambiguated, option
                 disambiguated = option
-        return geolookup(disambiguated['zmw'])
+                return geolookup(disambiguated['zmw'])
 
     else:
         return loadjson(url)['location']['requesturl'][:-5] + '.json'
 
 
-def forecast(locURL):
-    json = loadjson(APIURL + "/forecast/q/" + locURL)
-    return json['forecast']['simpleforecast']['forecastday']
+def forecast(locurl):
+    fc = loadjson(APIURL + "/forecast/q/" + locurl)
+    return fc['forecast']['simpleforecast']['forecastday']
 
 
 def icon(response):
@@ -75,18 +112,18 @@ def icon(response):
     return icon
 
 
-def temp(response): # TODO: check the flow of this function
-    temp = list(str(response['temp_f']).split('.')[0])
+def temp(response):  # TODO: check the flow of this function
+    temperature = list(str(response['temp_f']).split('.')[0])
     asciitemp = []
     for x in range(6):
         line = []
-        for y in range(len(temp)):
-            row = aw.numbers[int(temp[y])][x]
+        for y in range(len(temperature)):
+            row = aw.numbers[int(temperature[y])][x]
             line.append(row)
         asciitemp.append(''.join(line))
     return asciitemp
 
-# TODO: call these functions to draw the image
+
 def rowbuild(rowdict):
     splitlocs = {}
     for obj in rowdict:
@@ -104,15 +141,15 @@ def gridfill(rowdict):
     grid = [[" " for x in range(width)] for y in range(length)]
     for y in range(length):
         for x in range(width):
-            curpos = (x, y)
             if (x, y) in rowdict.keys():
                 for index, item in enumerate(rowdict[(x, y)]):
                     grid[y][x+index] = item
     return [''.join(x) for x in grid]
+# TODO: call these functions to draw the image
 
 
 if __name__ == "__main__":
-    if time == "now": # TODO: move this stuff to its own time parsing function
+    if time == "now":  # TODO: move this stuff to its own time parsing function
         disp = conditions(geolookup(location))
     elif time == "tomorrow":
         disp = forecast(geolookup(location))[0]
@@ -121,8 +158,3 @@ if __name__ == "__main__":
     import pprint
     # TODO: add in the argparse stuff
     pprint.pprint(disp)
-
-
-
-
-

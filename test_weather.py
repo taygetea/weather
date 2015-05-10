@@ -13,7 +13,7 @@ class TestLoadjson(TestCase):
 
 class TestGeoIP(TestCase):
     def testOne(self):
-        geo = weather.geoIP()
+        geo = weather.geoip()
         self.assertEquals(geo['status'], 'success')
 
 
@@ -24,13 +24,12 @@ class TestConditions(TestCase):
 
 
 class TestGeolookup(TestCase):
-    def testOne(self):  # does it exist?
-        loc = weather.geolookup("10026")
-        self.assertEquals(loc, 'US/NY/New_York.json')
-    def testTwo(self):
+    def testOne(self):
         loc = weather.geolookup("London")
         self.assertEquals(loc, 'global/stations/03772.json')
-
+    def testTwo(self):
+        loc = weather.geolookup("St Petersburg")
+        self.assertEquals(loc, 'US/FL/Saint_Petersburg.json')
 
 
 

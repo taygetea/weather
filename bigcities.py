@@ -6,19 +6,25 @@ with open('worldcitiespop.txt') as f:
     cleancities = []
     for i in cities:
         if i[4]:
-            cleancities.append([i[0], i[1], int(i[4])] + [round(float(x), 1) for x in i[5:7]])
+            cleancities.append([i[0], i[1], int(i[4])] + [round(float(x), 2) for x in i[5:7]])
     countries = list(set([city[0] for city in cleancities]))
-localcities = lambda ccode, size : [city[1:] for city in cleancities if city[0] == ccode and city[2] > size]
+    cityset = list(set([city[1] for city in cleancities]))
+localcities = lambda cc, size: [x for x in cleancities if x[0] == cc and x[2] > size]
 
 citydict = {}
-for country in countries:
 
+for country in countries:
     cities = localcities(country, 100000)
     if len(cities):
-        ld = []
         for city in cities:
-            ld.append(dict(Name=city[0], Population=city[1], Longitude=city[2], Latitude=city[3]))
-        citydict[country] = ld
+            singlecity = dict(Country=city[0], Population=city[2], Longitude=city[3], Latitude=city[4])
+            if city[1] not in citydict.keys():
+                citydict[city[1]] = [singlecity]
+            else:
+                citydict[city[1]].append(singlecity)
+                print city[1]
+
+
 
 with open('clean.json', 'w+') as cleaned:
-    json.dump(citydict, cleaned, indent=4)
+    json.dump(citydict, cleaned, indent=4, sort_keys=True)
