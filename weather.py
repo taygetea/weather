@@ -4,24 +4,15 @@ import urllib2
 from urllib import quote
 import json
 from math import radians, sin, cos, sqrt, asin
+import sys
 
 import asciiweather as aw
 
-
-
-# parser = argparse.ArgumentParser()
-# parser.add_argument('time', default='now', choices=['now','tomorrow','week'])
-# parser.add_argument('location', default='ip', nargs='+')
-# args = parser.parse_args()
-# ' '.join(sys.argv[1:]) # ' '.join(args.location)
-# sys.argv[0] # args.time
 
 DEBUG = False
 locations = dict(icon=(0, 0), nums=(23, 3), date=(26, 1))
 APIKEY = 'dc619f36b5360543'
 APIURL = "http://api.wunderground.com/api/" + APIKEY
-location = '34683'  # TODO: arbitrary parameters
-time = "now"
 icons = dict(clear=aw.clear, cloudy=aw.cloudy, partlycloudy=aw.partlycloudy, mostlycloudy=aw.partlycloudy,
              rain=aw.rainy, tstorms=aw.storm)  # TODO: make a config file with this stuff
 
@@ -73,16 +64,6 @@ def geolookup(loc):
             bigcities = json.load(f)
         for option in options:
             op = strval(option)
-
-            # TODO: check against the json
-            """
-            given: city name is in the file
-            then: enter latlong to geolookup
-
-            given: city name not in the file
-            then: out of the results with the most matching terms to your IP location,
-            get the one with the smallest distance to you
-            """
             if loc in bigcities.keys():
                 weighted = 0
                 best = []
@@ -94,10 +75,8 @@ def geolookup(loc):
                         best = entry
                 return geolookup(' '.join([loc, best['Country']]))
             elif len(op & lc) > len(disambiguated):  # checks for raw similarity
-                print op, lc, disambiguated, option
                 disambiguated = option
                 return geolookup(disambiguated['zmw'])
-
     else:
         return loadjson(url)['location']['requesturl'][:-5] + '.json'
 
@@ -149,8 +128,16 @@ def gridfill(rowdict):
 
 
 if __name__ == "__main__":
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('time', default='now', choices=['now','tomorrow','week'])
+    # parser.add_argument('location', default='ip', nargs='+')
+    # args = parser.parse_args()
+    location = ' '.join(sys.argv[2:]) # ' '.join(args.location)
+    time = sys.argv[1] # args.time
+    print sys.argv
     if time == "now":  # TODO: move this stuff to its own time parsing function
         disp = conditions(geolookup(location))
+
     elif time == "tomorrow":
         disp = forecast(geolookup(location))[0]
     else:
