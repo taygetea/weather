@@ -1,9 +1,9 @@
 #!/usr/bin/python
-import argparse
 import urllib2
 from urllib import quote
 import json
 from math import radians, sin, cos, sqrt, asin
+import sys
 
 import asciiweather as aw
 
@@ -137,24 +137,30 @@ def gridfill(rowdict):
 
 
 def args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-t', default="now", dest="time", choices=['now','tomorrow','week'], nargs='?')
-    parser.add_argument('-l', default='here', dest="location", nargs='3')
-    args = parser.parse_args()
-    location = ''.join(args.location)
-    time = args.time
+    arguments = sys.argv[1:]
+    for t in ["now", "tomorrow", "week", "later"]:
+        if  not len(arguments):
+            time = "now"
+            location = "here"
+        elif arguments[0] == t:
+            time = arguments[0]
+            location = ' '.join(arguments[1:])
+        else:
+            time = "now"
+            location = ' '.join(arguments)
     if location == "here":
         geo = geoip()
-        location = ' '.join([geo['city'], geo['region'], geo['country']])
+        location = ' '.join([geo['city'], geo['region']])
+    print time, location
     return time, location
 
+
 if __name__ == "__main__":
-
+    sys.argv.extend(["san", "francisco"])
     time, location = args()
-
     if time == "now":  # TODO: move this stuff to its own time parsing function
         disp = parseresponse(conditions(geolookup(location)))
-        offsets = {disp['icon']: (0, 0), disp['temp']: (23, 1), disp['name']: (21, 0), disp['time']: (23, 9), disp['wind']: (24, 10)}
+        offsets = {disp['icon']: (0, 0), disp['temp']: (23, 1), disp['name']: (21, 0), disp['time']: (12, 9), disp['wind']: (24, 10)}
         for line in gridfill(rowbuild(offsets)):
             print line
     elif time == "tomorrow":
