@@ -5,7 +5,7 @@ import json
 from math import radians, sin, cos, sqrt, asin
 import sys
 
-import asciiweather as aw
+import config as aw
 
 
 DEBUG = False
@@ -158,15 +158,17 @@ if __name__ == "__main__":
     time, location = args()
     if time == "now":  # TODO: move this stuff to its own time parsing function
         disp = parseresponse(conditions(geolookup(location)))
-        offsets = {disp['icon']: (0, 0), disp['temp']: (23, 1), disp['name']: (21, 0), disp['time']: (12, 9), disp['wind']: (24, 10)}
-        for line in gridfill(rowbuild(offsets)):
-            print line
     elif time == "tomorrow":
         geo = geolookup(location)
         print geo
         disp = parseresponse(forecast(geo)[0])
-        offsets = {disp['icon']: (0, 0), disp['temp']: (23, 1), disp['name']: (21, 0), disp['time']: (23, 9), disp['wind']: (14, 10)}
     else:
         disp = forecast(geolookup(location))
-
+    offsets = {disp['icon']: aw.pos['icon'],
+               disp['temp']: aw.pos['temp'],
+               disp['name']: aw.pos['name'],
+               disp['time']: aw.pos['time'],
+               disp['wind']: aw.pos['wind']}
+    for line in gridfill(rowbuild(offsets)):
+            print line
     # TODO: add in the argparse stuff
