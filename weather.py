@@ -99,7 +99,7 @@ def parseresponse(r):  # TODO: check the flow of this function
         asciitemp.append(''.join(line))
     parsed = dict(temp=tuple(asciitemp),
                   icon=tuple(icons[r['icon']]),
-                  time=("Local time: " + r['local_time_rfc822'],),
+                  time=(r['local_time_rfc822'],),
                   wind=("Wind: " + r['wind_string'],),
                   humidity=("Humidity: " + r['relative_humidity'],),
                   name=(r['display_location']['full'],))
@@ -131,7 +131,7 @@ def gridfill(rowdict):
                     try:
                         grid[y][x+index] = item
                     except IndexError:
-                        print "Index error"
+                        pass
 
     return [''.join(x) for x in grid]
 
@@ -151,7 +151,6 @@ def args():
     if location == "here":
         geo = geoip()
         location = ' '.join([geo['city'], geo['region']])
-    print time, location
     return time, location
 
 
@@ -166,7 +165,7 @@ if __name__ == "__main__":
         geo = geolookup(location)
         print geo
         disp = parseresponse(forecast(geo)[0])
-        offsets = {disp['icon']: (0, 0), disp['temp']: (23, 1), disp['name']: (21, 0), disp['time']: (23, 9), disp['wind']: (24, 10)}
+        offsets = {disp['icon']: (0, 0), disp['temp']: (23, 1), disp['name']: (21, 0), disp['time']: (23, 9), disp['wind']: (14, 10)}
     else:
         disp = forecast(geolookup(location))
 
