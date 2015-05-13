@@ -156,7 +156,6 @@ def args():
 
 
 if __name__ == "__main__":
-    sys.argv.extend(["san", "francisco"])
     time, location = args()
     if time == "now":  # TODO: move this stuff to its own time parsing function
         disp = parseresponse(conditions(geolookup(location)))
