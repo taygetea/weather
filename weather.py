@@ -17,16 +17,12 @@ icons = dict(clear=aw.clear, cloudy=aw.cloudy, partlycloudy=aw.partlycloudy, mos
 
 
 def haversine(lat1, lon1, lat2, lon2):  # http://rosettacode.org/wiki/Haversine_formula#Python
-
     r = 6372.8  # Earth radius in kilometers
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
     dlat = lat2 - lat1
     dlon = lon2 - lon1
-
-
     a = sin(dlat/2)**2 + cos(lat1)*cos(lat2)*sin(dlon/2)**2
     c = 2*asin(sqrt(a))
-
     return r * c
 
 
@@ -45,7 +41,10 @@ def geoip():
 
 
 def conditions(locurl):
-    cond = loadjson(APIURL + "/conditions" + locurl)
+    if locurl.startswith("/q/"):
+        cond = loadjson(APIURL + "/conditions" + locurl)
+    else:
+        cond = loadjson(APIURL + "/conditions/q/" + locurl)
     try:
         return cond['current_observation']
     except:
@@ -85,11 +84,8 @@ def geolookup(loc):
         return r['location']['l'] + '.json'
 
 def forecast(locurl):
-    fc = loadjson(APIURL + "/forecast/q/" + locurl)
+    fc = loadjson(APIURL + "/forecast" + locurl)
     return fc['forecast']['simpleforecast']['forecastday']
-
-
-
 
 
 def parseresponse(r):  # TODO: check the flow of this function
@@ -106,9 +102,7 @@ def parseresponse(r):  # TODO: check the flow of this function
                   time=("Local time: " + r['local_time_rfc822'],),
                   wind=("Wind: " + r['wind_string'],),
                   humidity=("Humidity: " + r['relative_humidity'],),
-                  name=(r['display_location']['full'],)
-                  )
-
+                  name=(r['display_location']['full'],))
     return parsed
 
 
@@ -140,19 +134,23 @@ def gridfill(rowdict):
                         print "Index error"
 
     return [''.join(x) for x in grid]
-# TODO: call these functions to draw the image
 
 
-if __name__ == "__main__":
+def args():
     parser = argparse.ArgumentParser()
-   #  parser.add_argument('time', default='now', choices=['now','tomorrow','week'])
-    parser.add_argument('location', default='here', nargs='+')
+    parser.add_argument('-t', default="now", dest="time", choices=['now','tomorrow','week'], nargs='?')
+    parser.add_argument('-l', default='here', dest="location", nargs='3')
     args = parser.parse_args()
-    location = ' '.join(args.location)
-    time = "now"  # args.time
+    location = ''.join(args.location)
+    time = args.time
     if location == "here":
         geo = geoip()
-        location = geo['city'] + geo['region'] + geo['country']
+        location = ' '.join([geo['city'], geo['region'], geo['country']])
+    return time, location
+
+if __name__ == "__main__":
+
+    time, location = args()
 
     if time == "now":  # TODO: move this stuff to its own time parsing function
         disp = parseresponse(conditions(geolookup(location)))
@@ -160,7 +158,10 @@ if __name__ == "__main__":
         for line in gridfill(rowbuild(offsets)):
             print line
     elif time == "tomorrow":
-        disp = forecast(geolookup(location))[0]
+        geo = geolookup(location)
+        print geo
+        disp = parseresponse(forecast(geo)[0])
+        offsets = {disp['icon']: (0, 0), disp['temp']: (23, 1), disp['name']: (21, 0), disp['time']: (23, 9), disp['wind']: (24, 10)}
     else:
         disp = forecast(geolookup(location))
 

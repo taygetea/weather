@@ -22,16 +22,19 @@ class TestConditions(TestCase):
         cond = weather.conditions("10026.json")
         self.assertEquals(cond['display_location']['city'], "New York")
 
+class TestForecast(TestCase):
+    fc = weather.forecast('/q/US/FL/Saint_Petersburg.json')
+    def testOne(self):
+        self.assertIsInstance(self.fc, list)
+
 
 class TestGeolookup(TestCase):
     def testOne(self):
         loc = weather.geolookup("London")
-        self.assertEquals(loc, 'global/stations/03772.json')
+        self.assertEquals(loc, '/q/zmw:00000.1.03772.json')
     def testTwo(self):
         loc = weather.geolookup("St Petersburg")
-        self.assertEquals(loc, 'US/FL/Saint_Petersburg.json')
-
-
+        self.assertEquals(loc, '/q/zmw:33701.1.99999.json')
 
 
 
