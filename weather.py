@@ -10,10 +10,10 @@ import config as aw
 
 DEBUG = False
 
-APIKEY = 'dc619f36b5360543'
+APIKEY = aw.apikey
 APIURL = "http://api.wunderground.com/api/" + APIKEY
 icons = dict(clear=aw.clear, cloudy=aw.cloudy, partlycloudy=aw.partlycloudy, mostlycloudy=aw.partlycloudy,
-             rain=aw.rainy, tstorms=aw.storm)  # TODO: make a config file with this stuff
+             rain=aw.rainy, tstorms=aw.storm, snow=aw.snow)
 
 
 def haversine(lat1, lon1, lat2, lon2):  # http://rosettacode.org/wiki/Haversine_formula#Python
@@ -35,12 +35,18 @@ def loadjson(url):
 
 
 def geoip():
+    """
+    Simple geolocation based on IP address
+    """
     response = loadjson("http://ip-api.com/json")
     if response["status"] == "success":
         return response
 
 
 def conditions(locurl):
+    """
+    gets the current weather. some of wunderground's responses are finnicky about the /q/ part of the URL.
+    """
     if locurl.startswith("/q/"):
         cond = loadjson(APIURL + "/conditions" + locurl)
     else:
@@ -52,6 +58,15 @@ def conditions(locurl):
 
 
 def geolookup(loc):
+    """
+
+    Tries to figure out what city the user meant. This partly uses WUnderground's API, and does some of it locally.
+    First, we see if the API has a disambiguated reply to our input. If not, we take its suggestions for possible
+    responses and determine what the user likely meant, by weighting the population of each option compared to
+    the distance of each option to the user. If that doesn't work, we resort to comparing most matching elements
+    in the user's location and in each option.
+
+    """
     loc = loc.lower()
     url = APIURL + "/geolookup/q/" + quote(loc) + '.json'
     response = loadjson(url)
@@ -84,11 +99,17 @@ def geolookup(loc):
         return r['location']['l'] + '.json'
 
 def forecast(locurl):
+    """
+    Returns a list of a few days of weather.
+    """
     fc = loadjson(APIURL + "/forecast" + locurl)
     return fc['forecast']['simpleforecast']['forecastday']
 
 
-def parseresponse(r):  # TODO: check the flow of this function
+def parseresponse(r):
+    """
+    Takes the disambiguated response and finds the information we actually want.
+    """
     temperature = list(str(r['temp_f']).split('.')[0])
     asciitemp = []
     for x in range(6):
@@ -107,6 +128,9 @@ def parseresponse(r):  # TODO: check the flow of this function
 
 
 def rowbuild(rowdict):
+    """
+    Generates a dictionary of row data and coordinates. This is, in effect, half of a sprite system.
+    """
     splitlocs = {}
     for obj in rowdict:
         xpos = rowdict[obj][0]
@@ -120,6 +144,9 @@ def rowbuild(rowdict):
 
 
 def gridfill(rowdict):
+    """
+    Merges together the queued rows from rowbuild into one big 2D list.
+    """
     offset = max(line[0] for line in rowdict)
     width = 70
     length = max([y[1] for y in rowdict.keys()]) + 1
@@ -137,21 +164,28 @@ def gridfill(rowdict):
 
 
 def args():
+    """
+    Parses out the arguments. The syntax is 'weather time location'.
+    A few examples:
+    > weather now new york
+
+    > weather tomorrow london
+    """
     arguments = sys.argv[1:]
     for t in ["now", "tomorrow", "week", "later"]:
         if  not len(arguments):
             time = "now"
-            location = "here"
+            geo = geoip()
+            location = ' '.join([geo['city'], geo['region']])
+            return time, location
         elif arguments[0] == t:
             time = arguments[0]
             location = ' '.join(arguments[1:])
+            return time, location
         else:
             time = "now"
             location = ' '.join(arguments)
-    if location == "here":
-        geo = geoip()
-        location = ' '.join([geo['city'], geo['region']])
-    return time, location
+            return time, location
 
 
 if __name__ == "__main__":

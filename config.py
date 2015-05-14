@@ -6,7 +6,7 @@ pos = dict(icon=(0, 1),
                  wind=(7, 11)
                  )
 
-
+apikey = 'dc619f36b5360543'
 
 tests = [
     [
