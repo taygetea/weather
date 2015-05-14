@@ -42,11 +42,6 @@ If no time is chosen, the current time will be used. If no location is chosen, y
     now, tomorrow, week
 
 
-```
-$ ./script parameter1 .. parameterN
- Output
-$ 
-```
 ## Version 
 * Version 0.1
 
