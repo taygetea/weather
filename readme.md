@@ -27,12 +27,12 @@ First, make sure you're using Python 2.7.x. For the moment, clone the repository
 
     $ git clone https://github.com/taygetea/weather.git
     
-And then make weather.py executable:
+And then make weather executable:
 
-    $ chmod +x weather.py
+    $ chmod +x src/bin/weather
     
-Optionally: Add the directory TermWeather is located in to your system PATH.
-
+Finally, install:
+	$ python setup.py install --user
 
 ## Usage
 
