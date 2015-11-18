@@ -5,7 +5,7 @@ import json
 from math import radians, sin, cos, sqrt, asin
 import sys
 
-import config as aw
+import termweather.config as aw
 
 
 DEBUG = False
@@ -76,8 +76,8 @@ def geolookup(loc):
         disambiguated = []
         strval = lambda x: {str(y) for y in x.values()}
         lc = strval(locality)
-        with open("clean.json") as f:
-            bigcities = json.load(f)
+        from termweather.data import citydataset
+        bigcities = json.loads(citydataset)
         for option in options:
             op = strval(option)
             if loc in bigcities.keys():

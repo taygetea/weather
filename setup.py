@@ -1,4 +1,5 @@
-mport sys
+#!/usr/bin/env python
+import sys
 from distutils.core import setup
 
 
@@ -9,9 +10,9 @@ setup(name='termweather',
    author='Olivia Schaefer',
    author_email='taygetea@gmail.com',
    url='https://github.com/taygetea/weather',
-   packages=('termweather',),
+   packages=('termweather'),
    scripts=(
-        'src/bin/weather'
+        'src/bin/weather',
    ),
    package_dir={'termweather':'src/lib'}
 )
