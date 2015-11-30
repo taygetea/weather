@@ -60,11 +60,12 @@ def conditions(locurl):
 def geolookup(loc):
     """
 
-    Tries to figure out what city the user meant. This partly uses WUnderground's API, and does some of it locally.
-    First, we see if the API has a disambiguated reply to our input. If not, we take its suggestions for possible
-    responses and determine what the user likely meant, by weighting the population of each option compared to
-    the distance of each option to the user. If that doesn't work, we resort to comparing most matching elements
-    in the user's location and in each option.
+    Tries to figure out what city the user meant. This partly uses WUnderground's API, and does
+    some of it locally. First, we see if the API has a disambiguated reply to our input. If not,
+    we take its suggestions for possible responses and determine what the user likely meant, by
+    weighting the population of each option compared to the distance of each option to the user.
+    If that doesn't work, we resort to comparing most matching elements in the user's location
+    and in each option.
 
     """
     loc = loc.lower()
