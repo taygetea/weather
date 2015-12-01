@@ -36,7 +36,7 @@ Finally, install:
 
 ## Usage
 
-    $ weather <time> <location>
+    $ weather <location>
 If no time is chosen, the current time will be used. If no location is chosen, your location will be used. Time options at the moment are limited to:
 
     now, tomorrow, week
