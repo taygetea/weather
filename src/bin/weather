@@ -178,16 +178,13 @@ def args():
             time = "now"
             geo = geoip()
             location = ' '.join([geo['city'], geo['region']])
-            return time, location
         elif arguments[0] == t:
             time = arguments[0]
             location = ' '.join(arguments[1:])
-            return time, location
         else:
             time = "now"
             location = ' '.join(arguments)
-            return time, location
-
+	return time, location
 
 if __name__ == "__main__":
     time, location = args()
