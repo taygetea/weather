@@ -8,7 +8,7 @@ import sys
 import termweather.config as aw
 
 
-DEBUG = False
+DEBUG = True
 
 APIKEY = aw.apikey
 APIURL = "http://api.wunderground.com/api/" + APIKEY
