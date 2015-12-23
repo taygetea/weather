@@ -186,6 +186,16 @@ def args():
             location = ' '.join(arguments)
 	return time, location
 
+def times()
+    time, location = args()
+    if time == "now":  # TODO: move this stuff to its own time parsing function
+        disp = parseresponse(conditions(geolookup(location)))
+    elif time == "tomorrow":
+        geo = geolookup(location)
+        print geo
+        disp = parseresponse(forecast(geo)[0])
+    else:
+        disp = forecast(geolookup(location))
 if __name__ == "__main__":
     time, location = args()
     if time == "now":  # TODO: move this stuff to its own time parsing function
